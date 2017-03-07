@@ -1,34 +1,41 @@
-# study
-# VERSION       0.1
-# MAINTAINER    kongou_ae
+FROM docker:1.10-git
 
-# use RHEL Atomic
-FROM fedora
+RUN apk add --no-cache \
+# bash for running scripts
+		bash \
+# go for compiling bashbrew
+		go
 
-# import RPM key
-RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-20-x86_64
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:$PATH
 
-#Install Packages
-#RUN yum update -y systemd.x86_64
-#RUN yum update -y iputils.x86_64
-#RUN yum update -y
+ENV GB_VERSION 0.4.1
+RUN set -x \
+	&& mkdir -p /go/src/github.com/constabulary \
+	&& cd /go/src/github.com/constabulary \
+	&& wget -qO- "https://github.com/constabulary/gb/archive/v${GB_VERSION}.tar.gz" \
+		| tar -xz \
+	&& mv gb-* gb \
+	&& cd gb \
+	&& go install -v ./...
 
-RUN yum install -y passwd openssh openssh-server openssh-clients sudo gcc
-RUN yum install -y python-devel
-RUN yum install -y make
+ENV DIR /usr/src/official-images
+ENV PATH $DIR/bashbrew/go/bin:$PATH
 
-# SSH setting
-RUN mkdir /var/run/sshd
-RUN echo 'root:password' |chpasswd
-RUN /usr/bin/ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -C '' -N ''
-RUN /usr/bin/ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -C '' -N ''
+ENV BASHBREW_LIBRARY $DIR/library
+ENV BASHBREW_CACHE /bashbrew-cache
 
-# sphinx setting
-RUN curl -kL https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
-RUN pip install sphinx
-RUN pip install graphviz   
-RUN pip install rst2pdf   
+# make sure our default cache dir exists and is writable by anyone (similar to /tmp)
+RUN mkdir -p "$BASHBREW_CACHE" \
+	&& chmod 1777 "$BASHBREW_CACHE"
+# (this allows us to decide at runtime the exact uid/gid we'd like to run as)
 
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
-#CMD /bin/bash
+WORKDIR $DIR
+COPY . $DIR
+
+RUN cd bashbrew/go && gb build
+
+VOLUME $BASHBREW_CACHE
+
+RUN ln -s "$PWD/bashbrew/bashbrew-entrypoint.sh" /usr/local/bin/bashbrew-entrypoint.sh
+ENTRYPOINT ["bashbrew-entrypoint.sh"]

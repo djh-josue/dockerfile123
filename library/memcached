@@ -1,0 +1,13 @@
+# this file is generated via https://github.com/docker-library/memcached/blob/f824f7200908afa68fe4b93a2455ab8872d4402c/generate-stackbrew-library.sh
+
+Maintainers: Tianon Gravi <admwiggin@gmail.com> (@tianon),
+             Joseph Ferguson <yosifkit@gmail.com> (@yosifkit)
+GitRepo: https://github.com/docker-library/memcached.git
+
+Tags: 1.4.35, 1.4, 1, latest
+GitCommit: c7e9192a40c261a9d8743eafa348fc6af1b454f8
+Directory: debian
+
+Tags: 1.4.35-alpine, 1.4-alpine, 1-alpine, alpine
+GitCommit: c7e9192a40c261a9d8743eafa348fc6af1b454f8
+Directory: alpine

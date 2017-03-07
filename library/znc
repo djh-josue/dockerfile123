@@ -1,0 +1,10 @@
+Maintainers: Alexey Sokolov <alexey+znc@asokolov.org> (@DarthGandalf)
+GitRepo: https://github.com/znc/znc-docker.git
+
+Tags: 1.6.4, 1.6, latest
+GitCommit: 4656af8c0a93cae3f59af966970f0716709caec7
+Directory: full
+
+Tags: 1.6.4-slim, 1.6-slim, slim
+GitCommit: 4656af8c0a93cae3f59af966970f0716709caec7
+Directory: slim
