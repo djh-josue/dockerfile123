@@ -1,16 +1,34 @@
-FROM ubuntu:16.04
-RUN set -ex \
-    && apt-get update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* \
-    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
-    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-    && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
-    && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
-    && chmod +x /usr/local/bin/gosu \
-    && gosu nobody true \
-    && apt-get purge -y --auto-remove ca-certificates wget
+# study
+# VERSION       0.1
+# MAINTAINER    kongou_ae
 
-EXPOSE 2048 3128 3129 3130 3401 4827
+# use RHEL Atomic
+FROM fedora
 
-CMD ["squid"]
+# import RPM key
+RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-20-x86_64
+
+#Install Packages
+#RUN yum update -y systemd.x86_64
+#RUN yum update -y iputils.x86_64
+#RUN yum update -y
+
+RUN yum install -y passwd openssh openssh-server openssh-clients sudo gcc
+RUN yum install -y python-devel
+RUN yum install -y make
+
+# SSH setting
+RUN mkdir /var/run/sshd
+RUN echo 'root:password' |chpasswd
+RUN /usr/bin/ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -C '' -N ''
+RUN /usr/bin/ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -C '' -N ''
+
+# sphinx setting
+RUN curl -kL https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python
+RUN pip install sphinx
+RUN pip install graphviz   
+RUN pip install rst2pdf   
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+#CMD /bin/bash
